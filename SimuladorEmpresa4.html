@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulador Contable - Multi Categoría</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body class="bg-gradient-to-br from-yellow-50 to-blue-100 min-h-screen flex items-center justify-center px-4">
+
+  <div class="max-w-3xl w-full bg-white rounded-2xl shadow-xl p-6 space-y-6 text-gray-800">
+    <h1 class="text-3xl font-bold text-center text-blue-700">🧮 Simulador Contable Multinivel</h1>
+
+    <div id="intro">
+      <p class="text-lg text-center">Selecciona una categoría y resuelve 5 preguntas contables reales. Solo tienes una oportunidad por pregunta.</p>
+
+      <div class="mt-4 text-center">
+        <label for="category" class="block text-lg font-semibold">Elige categoría:</label>
+        <select id="category" class="mt-2 border border-gray-300 rounded px-4 py-2">
+          <option value="educacion">Educación</option>
+          <option value="sanidad">Sanidad</option>
+          <option value="ong">ONG</option>
+        </select>
+      </div>
+
+      <div class="text-center">
+        <button onclick="startGame()" class="mt-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Comenzar simulación</button>
+      </div>
+    </div>
+
+    <div id="gameBox" class="hidden space-y-4">
+      <p id="questionText" class="font-semibold text-lg"></p>
+      <div id="options" class="space-y-2"></div>
+      <p id="feedback" class="font-medium mt-2"></p>
+    </div>
+
+    <div id="endBox" class="hidden">
+      <h2 class="text-2xl font-bold text-green-600 text-center">🎉 Simulación finalizada</h2>
+      <p class="mt-2 text-center" id="finalScore"></p>
+      <div id="reviewBox" class="mt-4 space-y-4"></div>
+      <div class="text-center">
+        <button onclick="location.reload()" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Volver a jugar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const allQuestions = {
+      "educacion": [
+        { text: "📥 Subvención pública de 10.000 € para aulas.", options: ["Banco / Subvenciones", "Subvenciones / Banco", "Banco / Matrículas", "Proveedores / Banco"], correct: 0, explanation: "Se incrementa el banco y se reconoce la subvención como ingreso." },
+        { text: "💳 Nóminas docentes por 2.500 €.", options: ["Personal / Banco", "Sueldos / Banco", "Banco / Sueldos", "Servicios / Caja"], correct: 1, explanation: "Gasto por Sueldos y salida de dinero en banco." },
+        { text: "📚 Compra de libros por 700 € al contado.", options: ["Libros / Caja", "Caja / Proveedores", "Servicios / Caja", "Didáctico / Banco"], correct: 0, explanation: "Se incrementan los libros y se paga en caja." },
+        { text: "🎓 Ingreso por matrícula: 1.000 €.", options: ["Banco / Ingresos", "Caja / Matrículas", "Matrículas / Banco", "Ingresos / Caja"], correct: 0, explanation: "Ingreso registrado directamente en banco." },
+        { text: "🖥 Compra de ordenadores por 2.000 € financiado.", options: ["Equipos / Proveedores", "Equipos / Banco", "Banco / Equipos", "Equipos / Caja"], correct: 0, explanation: "Se adquiere el equipo a crédito con proveedores." }
+      ],
+      "ong": [
+        { text: "🎁 Donación de 5.000 € recibida.", options: ["Banco / Donaciones", "Donaciones / Banco", "Banco / Subvenciones", "Proveedores / Banco"], correct: 0, explanation: "Se recibe dinero y se reconoce como donación." },
+        { text: "🚗 Gasto en transporte solidario: 800 €.", options: ["Transporte / Banco", "Banco / Transporte", "Caja / Banco", "Personal / Caja"], correct: 0, explanation: "Es un gasto que se paga desde banco." },
+        { text: "🏠 Alquiler mensual de la sede por 1.200 €.", options: ["Alquiler / Banco", "Banco / Alquiler", "Caja / Alquiler", "Alquiler / Caja"], correct: 0, explanation: "Gasto en alquiler pagado desde banco." },
+        { text: "🍲 Compra de alimentos para reparto: 600 € al contado.", options: ["Alimentos / Caja", "Caja / Alimentos", "Banco / Alimentos", "Proveedores / Caja"], correct: 0, explanation: "Compra directa pagada en efectivo (caja)." },
+        { text: "📦 Donación en especie (ropa) valorada en 1.500 €.", options: ["Ropa / Donaciones", "Donaciones / Ropa", "Proveedores / Ropa", "Caja / Donaciones"], correct: 0, explanation: "Se registra un activo recibido como donación." }
+      ],
+      "sanidad": [
+        { text: "💉 Compra de medicamentos por 1.500 € al contado.", options: ["Medicamentos / Caja", "Caja / Medicamentos", "Medicamentos / Proveedores", "Medicamentos / Banco"], correct: 0, explanation: "Compra directa pagada desde caja." },
+        { text: "🩺 Ingreso por atención médica de 3.000 €.", options: ["Banco / Ingresos", "Ingresos / Banco", "Banco / Clientes", "Caja / Ingresos"], correct: 0, explanation: "Ingreso que entra al banco directamente." },
+        { text: "👩‍⚕️ Pago de enfermeras: 2.200 €.", options: ["Sueldos / Banco", "Banco / Sueldos", "Caja / Personal", "Servicios / Banco"], correct: 0, explanation: "Sueldos es un gasto que se paga desde banco." },
+        { text: "🛏 Compra de camillas por 3.000 € a crédito.", options: ["Mobiliario / Proveedores", "Proveedores / Mobiliario", "Banco / Mobiliario", "Caja / Proveedores"], correct: 0, explanation: "Activos adquiridos a crédito generan deuda con proveedor." },
+        { text: "🧾 Pago de seguro médico anual: 1.800 €.", options: ["Seguros / Banco", "Banco / Seguros", "Caja / Seguros", "Seguros / Caja"], correct: 0, explanation: "Gasto en seguros pagado con banco." }
+      ]
+    };
+
+    let questions = [];
+    let currentQuestion = 0;
+    let score = 0;
+    let incorrectAnswers = [];
+
+    function startGame() {
+      const category = document.getElementById("category").value;
+      questions = [...allQuestions[category]].sort(() => 0.5 - Math.random()).slice(0, 5);
+      currentQuestion = 0;
+      score = 0;
+      incorrectAnswers = [];
+
+      document.getElementById("intro").classList.add("hidden");
+      document.getElementById("gameBox").classList.remove("hidden");
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById("questionText").textContent = q.text;
+      const optionsContainer = document.getElementById("options");
+      optionsContainer.innerHTML = "";
+      document.getElementById("feedback").textContent = "";
+
+      q.options.forEach((option, index) => {
+        const btn = document.createElement("button");
+        btn.className = "w-full text-left bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded shadow";
+        btn.textContent = option;
+        btn.onclick = () => checkAnswer(index);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selectedIndex) {
+      const q = questions[currentQuestion];
+      const correctIndex = q.correct;
+      const feedback = document.getElementById("feedback");
+
+      const buttons = document.querySelectorAll("#options button");
+      buttons.forEach(btn => btn.disabled = true);
+
+      if (selectedIndex === correctIndex) {
+        feedback.textContent = "✅ ¡Correcto!";
+        feedback.className = "text-green-600 font-semibold mt-2";
+        score++;
+      } else {
+        feedback.textContent = "❌ Incorrecto.";
+        feedback.className = "text-red-600 font-semibold mt-2";
+        incorrectAnswers.push({
+          question: q.text,
+          selected: q.options[selectedIndex],
+          correct: q.options[correctIndex],
+          explanation: q.explanation
+        });
+      }
+
+      setTimeout(() => {
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+          loadQuestion();
+        } else {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      document.getElementById("gameBox").classList.add("hidden");
+      document.getElementById("endBox").classList.remove("hidden");
+      document.getElementById("finalScore").textContent = `Has acertado ${score} de ${questions.length} preguntas.`;
+
+      const reviewBox = document.getElementById("reviewBox");
+      reviewBox.innerHTML = "";
+
+      if (incorrectAnswers.length > 0) {
+        reviewBox.innerHTML = `<h3 class="text-lg font-bold text-red-600">❌ Preguntas incorrectas:</h3>`;
+        incorrectAnswers.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "bg-red-50 border border-red-200 rounded p-3";
+          div.innerHTML = `
+            <p class="font-semibold">${item.question}</p>
+            <p><strong>Tu respuesta:</strong> ${item.selected}</p>
+            <p><strong>Correcta:</strong> ${item.correct}</p>
+            <p class="italic text-sm mt-1">${item.explanation}</p>
+          `;
+          reviewBox.appendChild(div);
+        });
+      } else {
+        reviewBox.innerHTML = `<p class="text-green-700 font-medium text-center">¡Excelente! Has respondido todo correctamente.</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
