@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test de Contabilidad</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-3xl bg-white shadow-lg rounded-lg p-6">
+    <h1 class="text-2xl font-bold text-center mb-4">Test de Contabilidad</h1>
+    <div id="quizContainer" class="mb-4"></div>
+    <div id="result" class="text-center text-lg font-semibold text-blue-700 mt-4"></div>
+    <div id="corrections" class="mt-6 text-sm"></div>
+    <button id="nextBtn" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 hidden">Siguiente</button>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "¿Qué es el activo en contabilidad?",
+        options: ["Lo que la empresa debe", "Los ingresos obtenidos", "Lo que la empresa posee", "Las pérdidas del negocio"],
+        answer: 2
+      },
+      {
+        question: "¿Qué representa el pasivo?",
+        options: ["Las utilidades", "Las deudas y obligaciones", "Los gastos operativos", "El dinero en efectivo"],
+        answer: 1
+      },
+      {
+        question: "¿Qué entra en el debe?",
+        options: ["Entrada de dinero o bienes", "Salida de dinero", "Ingresos", "Ganancias netas"],
+        answer: 0
+      },
+      {
+        question: "¿Qué entra en el haber?",
+        options: ["Pagos pendientes", "Entrada de efectivo", "Reducción de activos", "Aumento de pasivos"],
+        answer: 3
+      },
+      {
+        question: "¿Qué es el patrimonio neto?",
+        options: ["La diferencia entre activos y pasivos", "El total del pasivo", "El total de ingresos", "El saldo en caja"],
+        answer: 0
+      },
+      {
+        question: "¿Cuál de estos es un ingreso?",
+        options: ["Compra de suministros", "Pago de sueldos", "Donación recibida", "Pago de alquiler"],
+        answer: 2
+      },
+      {
+        question: "¿Cuál es un ejemplo de gasto?",
+        options: ["Donación", "Compra de comida", "Subvención recibida", "Ingreso por curso"],
+        answer: 1
+      },
+      {
+        question: "En el asiento contable, ¿qué se anota en el debe?",
+        options: ["Aumentos de ingresos", "Aumentos de gastos", "Reducción de pasivos", "Ganancias de ventas"],
+        answer: 1
+      },
+      {
+        question: "¿Qué documento muestra ingresos y gastos?",
+        options: ["Balance general", "Libro diario", "Estado de resultados", "Libro mayor"],
+        answer: 2
+      },
+      {
+        question: "¿Qué cuenta aumenta con un ingreso?",
+        options: ["Gasto", "Activo", "Pasivo", "Capital"],
+        answer: 3
+      },
+      {
+        question: "¿Cuál es un activo fijo?",
+        options: ["Caja", "Banco", "Ordenador", "Préstamo bancario"],
+        answer: 2
+      },
+      {
+        question: "¿Cuál es una obligación de la empresa?",
+        options: ["Capital", "Gasto", "Activo", "Pasivo"],
+        answer: 3
+      },
+      {
+        question: "Si la ONG compra alimentos, ¿qué tipo de cuenta afecta?",
+        options: ["Ingreso", "Activo", "Gasto", "Pasivo"],
+        answer: 2
+      },
+      {
+        question: "¿Qué es un asiento contable?",
+        options: ["Lista de socios", "Registro de operación económica", "Recibo de pago", "Presupuesto anual"],
+        answer: 1
+      },
+      {
+        question: "¿Dónde se registra primero una operación?",
+        options: ["Libro mayor", "Libro diario", "Estado financiero", "Caja chica"],
+        answer: 1
+      },
+      {
+        question: "¿Qué se muestra en el balance general?",
+        options: ["Ingresos y egresos", "Ingresos solamente", "Activos, pasivos y patrimonio", "Ganancias del mes"],
+        answer: 2
+      },
+      {
+        question: "Si una ONG recibe una subvención, ¿qué cuenta afecta?",
+        options: ["Pasivo", "Gasto", "Ingreso", "Activo fijo"],
+        answer: 2
+      },
+      {
+        question: "¿Qué significa abonar una cuenta?",
+        options: ["Anotarlo en el debe", "Anotarlo en el haber", "Anularla", "Pasarla al gasto"],
+        answer: 1
+      },
+      {
+        question: "¿Qué es el plan general contable?",
+        options: ["Lista de impuestos", "Normas para llevar la contabilidad", "Presupuesto anual", "Programa informático"],
+        answer: 1
+      },
+      {
+        question: "¿Qué herramienta se puede usar para contabilidad?",
+        options: ["Word", "Excel", "Photoshop", "PowerPoint"],
+        answer: 1
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let incorrectAnswers = [];
+    const totalQuestions = 20;
+
+    const quizContainer = document.getElementById("quizContainer");
+    const resultContainer = document.getElementById("result");
+    const correctionsContainer = document.getElementById("corrections");
+    const nextBtn = document.getElementById("nextBtn");
+
+    function shuffleQuestions(array) {
+      let shuffled = array.slice();
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled.slice(0, totalQuestions);
+    }
+
+    const quiz = shuffleQuestions(questions);
+
+    function showQuestion() {
+      if (currentQuestion >= totalQuestions) {
+        showResults();
+        return;
+      }
+
+      const q = quiz[currentQuestion];
+      quizContainer.innerHTML = `
+        <p class="font-semibold mb-2">Pregunta ${currentQuestion + 1} de ${totalQuestions}</p>
+        <h2 class="text-xl mb-4">${q.question}</h2>
+        <div id="options" class="space-y-2">
+          ${q.options.map((opt, i) => `
+            <button class="w-full text-left px-4 py-2 border rounded hover:bg-blue-100" onclick="selectAnswer(${i}, this)">${opt}</button>
+          `).join("")}
+        </div>
+      `;
+      resultContainer.textContent = "";
+      nextBtn.classList.add("hidden");
+    }
+
+    function selectAnswer(selected, btn) {
+      const q = quiz[currentQuestion];
+      const buttons = document.querySelectorAll("#options button");
+      buttons.forEach(b => b.disabled = true);
+
+      if (selected === q.answer) {
+        btn.classList.add("bg-green-200", "border-green-400");
+        score++;
+        resultContainer.textContent = "✅ ¡Correcto!";
+      } else {
+        btn.classList.add("bg-red-200", "border-red-400");
+        resultContainer.textContent = "❌ Incorrecto";
+        incorrectAnswers.push({
+          question: q.question,
+          correct: q.options[q.answer],
+          yourAnswer: q.options[selected]
+        });
+      }
+      nextBtn.classList.remove("hidden");
+    }
+
+    function showResults() {
+      quizContainer.innerHTML = "";
+      resultContainer.innerHTML = `<span class="text-2xl">🎉 Has acertado ${score} de ${totalQuestions} preguntas.</span>`;
+      let html = "";
+      if (incorrectAnswers.length > 0) {
+        html += `<h3 class="text-lg font-bold mt-4 mb-2">Preguntas incorrectas:</h3><ul class="list-disc pl-6">`;
+        incorrectAnswers.forEach(item => {
+          html += `<li class="mb-2"><strong>${item.question}</strong><br>
+                  Tu respuesta: <span class="text-red-600">${item.yourAnswer}</span><br>
+                  Respuesta correcta: <span class="text-green-600">${item.correct}</span></li>`;
+        });
+        html += `</ul>`;
+      } else {
+        html += `<p class="mt-4 text-green-600">¡Excelente! Todas las respuestas son correctas.</p>`;
+      }
+      correctionsContainer.innerHTML = html;
+      nextBtn.classList.add("hidden");
+    }
+
+    nextBtn.addEventListener("click", () => {
+      currentQuestion++;
+      showQuestion();
+    });
+
+    showQuestion();
+  </script>
+</body>
+</html>
