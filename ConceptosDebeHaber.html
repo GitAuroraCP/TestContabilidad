@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Contabilidad: Debe y Haber</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+        p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .question-section {
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: left;
+            background-color: #f9fbfb;
+        }
+        .question-section h3 {
+            color: #34495e;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        .option-group label {
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .option-group input[type="radio"] {
+            margin-right: 8px;
+            accent-color: #3498db; /* Custom color for radio buttons */
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+            margin-top: 15px;
+            margin-left: 10px; /* Space between buttons */
+            margin-right: 10px; /* Space between buttons */
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .feedback {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 1em;
+            line-height: 1.5;
+            display: none; /* Hidden by default */
+        }
+        .feedback.correct {
+            background-color: #e6f7ed; /* Light green */
+            color: #27ae60; /* Dark green */
+            border: 1px solid #27ae60;
+        }
+        .feedback.incorrect {
+            background-color: #fdeded; /* Light red */
+            color: #c0392b; /* Dark red */
+            border: 1px solid #c0392b;
+        }
+        .explanation {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+            font-size: 0.9em;
+        }
+        .results {
+            margin-top: 30px;
+            font-size: 1.2em;
+            color: #2c3e50;
+        }
+        .results p {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>¡Pon a prueba tus conocimientos de Contabilidad!</h1>
+        <p>Aplica la **regla de las manos** (DEBE = Izquierda, HABER = Derecha) para cada escenario.</p>
+
+        <div id="quiz-area">
+            <p id="scenario-text"></p>
+
+            <div class="question-section">
+                <h3>Cuenta 1: <span id="account1-name"></span></h3>
+                <div class="option-group">
+                    <label><input type="radio" name="account1_type" value="Activo"> Activo</label>
+                    <label><input type="radio" name="account1_type" value="Pasivo"> Pasivo</label>
+                    <label><input type="radio" name="account1_type" value="Patrimonio Neto"> Patrimonio Neto</label>
+                    <label><input type="radio" name="account1_type" value="Gasto"> Gasto</label>
+                    <label><input type="radio" name="account1_type" value="Ingreso"> Ingreso</label>
+                </div>
+                <div class="option-group">
+                    <label><input type="radio" name="account1_side" value="DEBE"> DEBE</label>
+                    <label><input type="radio" name="account1_side" value="HABER"> HABER</label>
+                </div>
+            </div>
+
+            <div class="question-section">
+                <h3>Cuenta 2: <span id="account2-name"></span></h3>
+                <div class="option-group">
+                    <label><input type="radio" name="account2_type" value="Activo"> Activo</label>
+                    <label><input type="radio" name="account2_type" value="Pasivo"> Pasivo</label>
+                    <label><input type="radio" name="account2_type" value="Patrimonio Neto"> Patrimonio Neto</label>
+                    <label><input type="radio" name="account2_type" value="Gasto"> Gasto</label>
+                    <label><input type="radio" name="account2_type" value="Ingreso"> Ingreso</label>
+                </div>
+                <div class="option-group">
+                    <label><input type="radio" name="account2_side" value="DEBE"> DEBE</label>
+                    <label><input type="radio" name="account2_side" value="HABER"> HABER</label>
+                </div>
+            </div>
+
+            <button onclick="checkAnswer()">Comprobar Respuesta</button>
+            <button id="next-button" onclick="nextQuestion()" style="display: none;">Siguiente Pregunta</button>
+
+            <div id="feedback" class="feedback"></div>
+        </div>
+
+        <div id="results-area" style="display: none;">
+            <h2>¡Cuestionario Terminado!</h2>
+            <p>Has respondido correctamente a <span id="score"></span> de <span id="total-questions"></span> preguntas.</p>
+            <p>¡Sigue practicando para dominar estos conceptos!</p>
+            <button onclick="restartQuiz()">Volver a empezar</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                scenario: "La empresa **compra material de oficina por 150 €** y lo paga al momento con la **tarjeta del banco**.",
+                account1_name: "Material de Oficina",
+                account1_type: "Gasto",
+                account1_side: "DEBE",
+                explanation1: "El material de oficina es un GASTO que aumenta, y los gastos aumentan por el DEBE (mano izquierda).",
+                account2_name: "Banco",
+                account2_type: "Activo",
+                account2_side: "HABER",
+                explanation2: "El dinero en el banco es un ACTIVO que disminuye al pagar, y los activos disminuyen por el HABER (mano derecha)."
+            },
+            {
+                scenario: "La empresa **vende servicios por 500 € a un cliente a crédito** (el cliente pagará el mes que viene).",
+                account1_name: "Clientes",
+                account1_type: "Activo",
+                account1_side: "DEBE",
+                explanation1: "Un cliente que te debe dinero es un ACTIVO (derecho de cobro) que aumenta, y los activos aumentan por el DEBE (mano izquierda).",
+                account2_name: "Venta de Servicios",
+                account2_type: "Ingreso",
+                account2_side: "HABER",
+                explanation2: "La venta de servicios es un INGRESO que aumenta, y los ingresos aumentan por el HABER (mano derecha)."
+            },
+            {
+                scenario: "La empresa **paga la nómina** de sus empleados por un total de **1.200 € a través del banco**.",
+                account1_name: "Sueldos y Salarios",
+                account1_type: "Gasto",
+                account1_side: "DEBE",
+                explanation1: "El sueldo es un GASTO que aumenta, y los gastos aumentan por el DEBE (mano izquierda).",
+                account2_name: "Banco",
+                account2_type: "Activo",
+                account2_side: "HABER",
+                explanation2: "El dinero en el banco es un ACTIVO que disminuye al pagar, y los activos disminuyen por el HABER (mano derecha)."
+            },
+            {
+                scenario: "La empresa **recibe un préstamo bancario** de **10.000 €** que ingresa en la **cuenta del banco**.",
+                account1_name: "Banco",
+                account1_type: "Activo",
+                account1_side: "DEBE",
+                explanation1: "El dinero en el banco es un ACTIVO que aumenta, y los activos aumentan por el DEBE (mano izquierda).",
+                account2_name: "Deuda con Banco",
+                account2_type: "Pasivo",
+                account2_side: "HABER",
+                explanation2: "El préstamo es una DEUDA (PASIVO) que aumenta, y los pasivos aumentan por el HABER (mano derecha)."
+            },
+            {
+                scenario: "Los socios de la empresa **aportan 5.000 € adicionales al capital social**, ingresándolos en el **banco**.",
+                account1_name: "Banco",
+                account1_type: "Activo",
+                account1_side: "DEBE",
+                explanation1: "El dinero en el banco es un ACTIVO que aumenta, y los activos aumentan por el DEBE (mano izquierda).",
+                account2_name: "Capital Social",
+                account2_type: "Patrimonio Neto",
+                account2_side: "HABER",
+                explanation2: "El capital social es parte del PATRIMONIO NETO que aumenta, y el patrimonio neto aumenta por el HABER (mano derecha)."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const scenarioText = document.getElementById('scenario-text');
+        const account1Name = document.getElementById('account1-name');
+        const account2Name = document.getElementById('account2-name');
+        const feedbackDiv = document.getElementById('feedback');
+        const nextButton = document.getElementById('next-button');
+        const quizArea = document.getElementById('quiz-area');
+        const resultsArea = document.getElementById('results-area');
+        const scoreSpan = document.getElementById('score');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+
+        function displayQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                const q = questions[currentQuestionIndex];
+                scenarioText.innerHTML = `**Escenario ${currentQuestionIndex + 1}/${questions.length}:**<br>${q.scenario}`;
+                account1Name.textContent = q.account1_name;
+                account2Name.textContent = q.account2_name;
+
+                // Clear previous selections and feedback
+                document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+                feedbackDiv.style.display = 'none';
+                feedbackDiv.className = 'feedback'; // Reset classes
+                feedbackDiv.innerHTML = '';
+                nextButton.style.display = 'none';
+            } else {
+                showResults();
+            }
+        }
+
+        function checkAnswer() {
+            const q = questions[currentQuestionIndex];
+
+            const account1TypeSelected = document.querySelector('input[name="account1_type"]:checked')?.value;
+            const account1SideSelected = document.querySelector('input[name="account1_side"]:checked')?.value;
+            const account2TypeSelected = document.querySelector('input[name="account2_type"]:checked')?.value;
+            const account2SideSelected = document.querySelector('input[name="account2_side"]:checked')?.value;
+
+            if (!account1TypeSelected || !account1SideSelected || !account2TypeSelected || !account2SideSelected) {
+                feedbackDiv.className = 'feedback incorrect';
+                feedbackDiv.innerHTML = '¡Ojo! Debes seleccionar una opción para cada tipo de cuenta y su lado (Debe/Haber).';
+                feedbackDiv.style.display = 'block';
+                return;
+            }
+
+            let isCorrect = true;
+            let feedbackHtml = '';
+
+            // Check account 1
+            if (account1TypeSelected === q.account1_type && account1SideSelected === q.account1_side) {
+                feedbackHtml += `<p><strong>Cuenta 1 (${q.account1_name}): ¡Correcto!</strong> Es un **${q.account1_type}** y va al **${q.account1_side}**. <span class="explanation">${q.explanation1}</span></p>`;
+            } else {
+                isCorrect = false;
+                feedbackHtml += `<p><strong>Cuenta 1 (${q.account1_name}): Incorrecto.</strong> Tu respuesta fue ${account1TypeSelected} y ${account1SideSelected}. La respuesta correcta es **${q.account1_type}** al **${q.account1_side}**. <span class="explanation">${q.explanation1}</span></p>`;
+            }
+
+            // Check account 2
+            if (account2TypeSelected === q.account2_type && account2SideSelected === q.account2_side) {
+                feedbackHtml += `<p><strong>Cuenta 2 (${q.account2_name}): ¡Correcto!</strong> Es un **${q.account2_type}** y va al **${q.account2_side}**. <span class="explanation">${q.explanation2}</span></p>`;
+            } else {
+                isCorrect = false;
+                feedbackHtml += `<p><strong>Cuenta 2 (${q.account2_name}): Incorrecto.</strong> Tu respuesta fue ${account2TypeSelected} y ${account2SideSelected}. La respuesta correcta es **${q.account2_type}** al **${q.account2_side}**. <span class="explanation">${q.explanation2}</span></p>`;
+            }
+
+            feedbackDiv.className = isCorrect ? 'feedback correct' : 'feedback incorrect';
+            feedbackDiv.innerHTML = feedbackHtml;
+            feedbackDiv.style.display = 'block';
+
+            if (isCorrect) {
+                score++;
+            }
+            nextButton.style.display = 'inline-block'; // Show next button
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        function showResults() {
+            quizArea.style.display = 'none';
+            resultsArea.style.display = 'block';
+            scoreSpan.textContent = score;
+            totalQuestionsSpan.textContent = questions.length;
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            quizArea.style.display = 'block';
+            resultsArea.style.display = 'none';
+            displayQuestion();
+        }
+
+        // Initialize the quiz
+        displayQuestion();
+
+    </script>
+</body>
+</html>
